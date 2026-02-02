@@ -26,7 +26,11 @@
           "end": 120,
           "summary": "Cách xem và xuất báo cáo lịch sử ra vào. Bộ lọc theo thời gian, theo nhân viên, và xuất file Excel."
         }
-      ]
+      ],
+      "position": {
+        "x": 214.388916015625,
+        "y": 275.5
+      }
     },
     {
       "id": "hvs-kios-lite",
@@ -54,7 +58,11 @@
           "end": 100,
           "summary": "Demo quy trình bán hàng: chọn sản phẩm, áp dụng khuyến mãi, thanh toán và in hóa đơn."
         }
-      ]
+      ],
+      "position": {
+        "x": -100.0,
+        "y": 324.4444274902344
+      }
     },
     {
       "id": "hvs-food",
@@ -88,7 +96,11 @@
           "end": 180,
           "summary": "Quy trình thanh toán đa hình thức. Xem báo cáo doanh thu theo ngày, tuần, tháng và xuất báo cáo."
         }
-      ]
+      ],
+      "position": {
+        "x": 25.50006103515625,
+        "y": 53.555572509765625
+      }
     },
     {
       "id": "hvs-kios",
@@ -122,7 +134,11 @@
           "end": 170,
           "summary": "Dashboard tổng quan kinh doanh. Báo cáo lợi nhuận, sản phẩm bán chạy và phân tích xu hướng."
         }
-      ]
+      ],
+      "position": {
+        "x": 12.55548095703125,
+        "y": 149.22216796875
+      }
     },
     {
       "id": "hvs-umea",
@@ -162,7 +178,22 @@
           "end": 250,
           "summary": "Hướng dẫn tích hợp UMEA với các hệ thống khác qua REST API. Webhook và đồng bộ dữ liệu."
         }
-      ]
+      ],
+      "position": {
+        "x": 23.27777099609375,
+        "y": 140.72216796875
+      }
+    },
+    {
+      "id": "a",
+      "name": "abc",
+      "appLink": "https://umea-dev.huongvietsinh.com/auth/login",
+      "group": "dynamic",
+      "icon": "ExternalLink",
+      "position": {
+        "x": 0.0,
+        "y": 0.0
+      }
     }
   ]
 }

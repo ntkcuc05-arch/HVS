@@ -1,6 +1,6 @@
 /* =====================================================
-   HVS ECOSYSTEM - GLOBAL STYLES
-   Modern Enterprise Dashboard Theme
+  HVS ECOSYSTEM - GLOBAL STYLES
+  Modern Enterprise Dashboard Theme
    ===================================================== */
 
 * {
@@ -95,10 +95,12 @@ button {
 }
 
 @keyframes sway {
+
   0%,
   100% {
     transform: rotate(-2deg);
   }
+
   50% {
     transform: rotate(2deg);
   }
@@ -109,6 +111,7 @@ button {
     transform: scale(0);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;

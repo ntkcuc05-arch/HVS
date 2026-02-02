@@ -22,77 +22,82 @@ const getVideoData = (systemId, videoType) => {
   const systemName = systemConfig[systemId]?.name || systemId;
 
   if (videoType === "link") {
+    // Custom links based on system
+    let customLink = "https://kios-dev.huongvietsinh.com/login";
+
+    // You can add specific links for other systems here if needed
+
     return {
       title: `${systemName} - Video hướng dẫn Online`,
-      url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      summary: `📌 TỔNG KẾT NỘI DUNG VIDEO
+      url: customLink,
+      summary: ` TỔNG KẾT NỘI DUNG VIDEO
 
-🎯 Mục tiêu:
+Mục tiêu:
 Hướng dẫn người dùng sử dụng ${systemName} một cách hiệu quả.
 
-📋 Nội dung chính:
+Nội dung chính:
 
 1. Giới thiệu tổng quan
-   • Tổng quan về ${systemName}
-   • Vai trò trong hệ sinh thái HVS
-   • Các tính năng nổi bật
+  • Tổng quan về ${systemName}
+  • Vai trò trong hệ sinh thái HVS
+  • Các tính năng nổi bật
 
 2. Hướng dẫn đăng nhập
-   • Cách truy cập hệ thống
-   • Đăng nhập với tài khoản được cấp
-   • Khôi phục mật khẩu
+  • Cách truy cập hệ thống
+  • Đăng nhập với tài khoản được cấp
+  • Khôi phục mật khẩu
 
 3. Giao diện chính
-   • Dashboard và các menu
-   • Tùy chỉnh hiển thị
-   • Phím tắt thường dùng
+  • Dashboard và các menu
+  • Tùy chỉnh hiển thị
+  • Phím tắt thường dùng
 
 4. Các chức năng cơ bản
-   • Thao tác CRUD dữ liệu
-   • Tìm kiếm và lọc
-   • Xuất báo cáo
+  • Thao tác CRUD dữ liệu
+  • Tìm kiếm và lọc
+  • Xuất báo cáo
 
 5. Mẹo sử dụng
-   • Tối ưu hiệu suất làm việc
-   • Xử lý lỗi thường gặp
-   • Liên hệ hỗ trợ kỹ thuật`,
+  • Tối ưu hiệu suất làm việc
+  • Xử lý lỗi thường gặp
+  • Liên hệ hỗ trợ kỹ thuật`,
       duration: "15:30",
     };
   } else {
     return {
       title: `${systemName} - Video hướng dẫn Offline`,
-      url: "/videos/demo.mp4",
+      url: "https://www.youtube.com/watch?v=N4KSCjEtnu0",
       summary: `📌 TỔNG KẾT NỘI DUNG VIDEO
 
-🎯 Mục tiêu:
+Mục tiêu:
 Demo chi tiết và hướng dẫn nâng cao cho ${systemName}.
 
-📋 Nội dung chính:
+Nội dung chính:
 
 1. Demo thực tế
-   • Walkthrough đầy đủ các màn hình
-   • Thao tác mẫu từng chức năng
-   • Các tình huống sử dụng thực tế
+  • Walkthrough đầy đủ các màn hình
+  • Thao tác mẫu từng chức năng
+  • Các tình huống sử dụng thực tế
 
 2. Cấu hình nâng cao
-   • Thiết lập tham số hệ thống
-   • Tùy chỉnh workflow
-   • Tích hợp với hệ thống khác
+  • Thiết lập tham số hệ thống
+  • Tùy chỉnh workflow
+  • Tích hợp với hệ thống khác
 
 3. Quản trị hệ thống
-   • Phân quyền người dùng
-   • Quản lý nhóm và vai trò
-   • Audit log và bảo mật
+  • Phân quyền người dùng
+  • Quản lý nhóm và vai trò
+  • Audit log và bảo mật
 
 4. Báo cáo & Thống kê
-   • Các loại báo cáo có sẵn
-   • Tùy chỉnh báo cáo
-   • Lập lịch báo cáo tự động
+  • Các loại báo cáo có sẵn
+  • Tùy chỉnh báo cáo
+  • Lập lịch báo cáo tự động
 
 5. Troubleshooting
-   • Các lỗi thường gặp
-   • Cách khắc phục nhanh
-   • Khi nào cần hỗ trợ IT`,
+  • Các lỗi thường gặp
+  • Cách khắc phục nhanh
+  • Khi nào cần hỗ trợ IT`,
       duration: "22:45",
     };
   }

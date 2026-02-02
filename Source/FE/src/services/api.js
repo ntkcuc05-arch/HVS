@@ -1,32 +1,48 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+const _request = async (endpoint, options = {}) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        ...options.headers,
+      },
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.detail || `Request failed: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`API Error [${endpoint}]:`, error);
+    return null;
+  }
+};
 
 export const api = {
-  baseUrl: API_BASE_URL,
+  getSystems: () => _request("/api/systems").then(data => data || []),
 
-  async getSystems() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/systems`);
-      if (!response.ok) throw new Error("Failed to fetch systems");
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching systems:", error);
-      return [];
-    }
-  },
+  getSystemDetail: (id) => _request(`/api/systems/${id}`),
 
-  async getSystemDetail(id) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/systems/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch system detail");
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching system detail:", error);
-      return null;
-    }
-  },
+  createSystem: (formData) => _request("/api/systems", {
+    method: "POST",
+    body: formData, // FormData handles its own Content-Type
+  }),
 
-  getStaticUrl(path) {
-    return `${API_BASE_URL}${path}`;
-  },
+  updateSystem: (id, formData) => _request(`/api/systems/${id}`, {
+    method: "PUT",
+    body: formData,
+  }),
+
+  deleteSystem: (id) => _request(`/api/systems/${id}`, {
+    method: "DELETE",
+  }),
+
+  updateSystemPosition: (id, position) => _request(`/api/systems/${id}/position`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(position),
+  }),
+
+  getStaticUrl: (path) => path ? (path.startsWith('http') ? path : `${API_BASE_URL}${path}`) : null,
 };

@@ -357,7 +357,7 @@
   gap: 10px;
 }
 
-.loop-control > span {
+.loop-control>span {
   font-size: 0.8rem;
   color: #666;
   line-height: 1.4;
@@ -411,13 +411,13 @@
   transform: translateX(18px);
 }
 
-.loop-toggle > span {
+.loop-toggle>span {
   font-size: 0.8rem;
   font-weight: 500;
   color: #999;
 }
 
-.loop-toggle.active > span {
+.loop-toggle.active>span {
   color: var(--player-color);
 }
 
@@ -625,6 +625,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
