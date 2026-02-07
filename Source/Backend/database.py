@@ -25,9 +25,9 @@ def init_db():
         app_link TEXT,
         youtube_link TEXT,
         avatar_url TEXT,
-        pos_x REAL DEFAULT 0,
         pos_y REAL DEFAULT 0,
-        "group" TEXT DEFAULT 'dynamic'
+        "group" TEXT DEFAULT 'dynamic',
+        has_border INTEGER DEFAULT 0
     )
     ''')
     

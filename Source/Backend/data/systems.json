@@ -4,7 +4,7 @@
       "id": "hvs-gate",
       "name": "HVS-GATE",
       "group": "fruit",
-      "appLink": "https://gate.hvs-system.com",
+      "appLink": "https://gate-dev.huongvietsinh.com/login",
       "videoFile": "hvs-gate.mp4",
       "docFile": null,
       "segments": [
@@ -36,7 +36,7 @@
       "id": "hvs-kios-lite",
       "name": "HVS-KIOS LITE",
       "group": "fruit",
-      "appLink": "https://kios-lite.hvs-system.com",
+      "appLink": "https://lite.huongvietsinh.com/",
       "videoFile": "hvs-kios-lite.mp4",
       "docFile": null,
       "segments": [
@@ -68,7 +68,7 @@
       "id": "hvs-food",
       "name": "HVS-FOOD",
       "group": "branch",
-      "appLink": "https://food.hvs-system.com",
+      "appLink": "https://food-dev.huongvietsinh.com/login",
       "videoFile": "hvs-food.mp4",
       "docFile": null,
       "segments": [
@@ -106,7 +106,7 @@
       "id": "hvs-kios",
       "name": "HVS-KIOS",
       "group": "branch",
-      "appLink": "https://kios.hvs-system.com",
+      "appLink": "https://kios-dev.huongvietsinh.com/",
       "videoFile": "hvs-kios.mp4",
       "docFile": null,
       "segments": [
@@ -144,7 +144,7 @@
       "id": "hvs-umea",
       "name": "HVS-UMEA",
       "group": "root",
-      "appLink": "https://umea.hvs-system.com",
+      "appLink": "https://umea-dev.huongvietsinh.com/auth/login",
       "videoFile": "hvs-umea.mp4",
       "docFile": "hvs-umea-guide.pdf",
       "segments": [

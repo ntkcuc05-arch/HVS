@@ -119,7 +119,7 @@ function VideoPlayer() {
 
   const config = systemConfig[systemId] || systemConfig["hvs-umea"];
   const videoData = getVideoData(systemId, videoType);
-  const IconComponent = config.icon;
+  const IconComponent = config.icon || ExternalLink;
 
   // Video Controls
   const handlePlayPause = () => {

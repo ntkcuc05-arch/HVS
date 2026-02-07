@@ -63,7 +63,8 @@ async def get_systems():
             "youtubeLink": row["youtube_link"],
             "avatarUrl": row["avatar_url"],
             "position": {"x": row["pos_x"], "y": row["pos_y"]},
-            "group": row["group"]
+            "group": row["group"],
+            "hasBorder": bool(row["has_border"])
         } for row in rows
     ]
 
@@ -73,6 +74,7 @@ async def create_system(
     name: str = Form(...),
     app_link: Optional[str] = Form(None),
     youtube_link: Optional[str] = Form(None),
+    has_border: bool = Form(False),
     avatar: Optional[UploadFile] = File(None)
 ):
     """Create a new system with optional avatar upload"""
@@ -94,10 +96,11 @@ async def create_system(
             shutil.copyfileobj(avatar.file, buffer)
         avatar_url = f"/static/uploads/{file_name}"
 
+    has_border_val = 1 if (has_border == True or has_border == "true") else 0
     cursor.execute('''
-    INSERT INTO systems (id, name, app_link, youtube_link, avatar_url, pos_x, pos_y, "group")
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (id, name, app_link, youtube_link, avatar_url, 0, 0, 'dynamic'))
+    INSERT INTO systems (id, name, app_link, youtube_link, avatar_url, pos_x, pos_y, "group", has_border)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (id, name, app_link, youtube_link, avatar_url, 0, 0, 'dynamic', has_border_val))
     
     conn.commit()
     conn.close()
@@ -110,6 +113,7 @@ async def update_system(
     name: str = Form(...),
     app_link: Optional[str] = Form(None),
     youtube_link: Optional[str] = Form(None),
+    has_border: bool = Form(False),
     avatar: Optional[UploadFile] = File(None)
 ):
     """Update an existing system"""
@@ -137,11 +141,12 @@ async def update_system(
             shutil.copyfileobj(avatar.file, buffer)
         avatar_url = f"/static/uploads/{file_name}"
 
+    has_border_val = 1 if (has_border == True or has_border == "true") else 0
     cursor.execute('''
     UPDATE systems 
-    SET name = ?, app_link = ?, youtube_link = ?, avatar_url = ?
+    SET name = ?, app_link = ?, youtube_link = ?, avatar_url = ?, has_border = ?
     WHERE id = ?
-    ''', (name, app_link, youtube_link, avatar_url, system_id))
+    ''', (name, app_link, youtube_link, avatar_url, has_border_val, system_id))
     
     conn.commit()
     conn.close()

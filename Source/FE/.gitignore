@@ -2,3 +2,10 @@
 node_modules/
 dist/
 .DS_Store
+.env
+.env.example
+node_modules/
+dist/
+venv/
+.DS_Store
+Thumbs.db

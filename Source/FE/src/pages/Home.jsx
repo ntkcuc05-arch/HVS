@@ -12,39 +12,30 @@ import {
   Edit,
   Trash2,
   Upload,
+  Apple,
 } from "lucide-react";
 import { api } from "../services/api";
 import { systemConfig } from "../constants/systems";
 import { useWeather } from "../hooks/useWeather";
 import WeatherWidget from "../components/WeatherWidget";
+import WeatherEffects from "../components/WeatherEffects";
+import ConfirmModal from "../components/ConfirmModal";
 import "./Home.css";
 
 // =====================================================
 // TREE NODE COMPONENT
 // =====================================================
-function TreeNode({ system, config, popupPosition = "above", isEditMode, isDeleteMode, onEdit, onDelete }) {
-  const [showChoices, setShowChoices] = useState(false);
+function TreeNode({ system, config, isEditMode, isDeleteMode, onEdit, onDelete, isActive, onToggle, onWatchVideo, zoomLevel = 1, onZoom, maxZoom = 2.5 }) {
 
-  const handleNodeClick = (e) => {
-    e.stopPropagation();
-    if (isEditMode) {
-      onEdit(system);
-      return;
-    }
-    if (isDeleteMode) {
-      onDelete(system);
-      return;
-    }
-    setShowChoices(!showChoices);
-  };
 
-  const handleChoiceClick = (type) => {
+  const handleChoiceClick = (e, type) => {
+    if (e) e.stopPropagation();
     if (type === "link") {
-      const url = system.appLink || (systemConfig[system.id]?.links?.[system.id]);
+      const url = system.appLink || systemConfig[system.id]?.appLink || "https://huongvietsinh.com";
       if (url) window.open(url, "_blank");
     } else if (type === "mp4") {
-      const videoUrl = system.youtubeLink || "https://www.youtube.com/watch?v=N4KSCjEtnu0";
-      window.open(videoUrl, "_blank");
+      const videoUrl = system.youtubeLink || systemConfig[system.id]?.youtubeLink || "https://www.youtube.com/watch?v=7dUuktZFAIE";
+      if (videoUrl) onWatchVideo(videoUrl);
     }
   };
 
@@ -54,78 +45,100 @@ function TreeNode({ system, config, popupPosition = "above", isEditMode, isDelet
   return (
     <motion.div
       className={`tree-node ${isEditMode ? 'edit-pulse' : ''} ${isDeleteMode ? 'delete-glow' : ''}`}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      style={{ "--node-color": config?.color || "#60A5FA", "--node-glow": config?.glowColor || "rgba(96, 165, 250, 0.5)" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{
+        "--node-color": config?.color || "#60A5FA",
+        "--node-glow": config?.glowColor || "rgba(96, 165, 250, 0.5)"
+      }}
     >
-      <div className="node-glow-ring"></div>
       <motion.div
-        className="node-card"
-        onClick={handleNodeClick}
-        whileHover={{ scale: 1.05, y: -3 }}
-        whileTap={{ scale: 0.98 }}
-        style={{ cursor: isEditMode || isDeleteMode ? "pointer" : "grab" }}
+        className="zoom-target-wrapper"
+        animate={{ scale: zoomLevel }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >
-        <div className="node-icon">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={system.name} className="node-avatar" />
-          ) : (
-            <IconComponent size={24} strokeWidth={1.5} />
-          )}
-        </div>
-        {isEditMode && <div className="edit-overlay"><Edit size={16} /></div>}
-        {isDeleteMode && <div className="delete-overlay"><Trash2 size={16} /></div>}
+        <div className="node-glow-ring"></div>
+        <motion.div
+          className="node-card"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isEditMode) onEdit(system);
+            else if (isDeleteMode) onDelete(system);
+            else onToggle(system.id);
+          }}
+
+          whileHover={{ scale: 1.05, y: -3 }}
+          whileTap={{ scale: 0.98 }}
+          style={{ cursor: isEditMode ? "grab" : (isDeleteMode ? "pointer" : "pointer") }}
+
+        >
+          <div className="node-icon">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={system.name} className="node-avatar" />
+            ) : (
+              <IconComponent size={24} strokeWidth={1.5} />
+            )}
+          </div>
+          {isEditMode && <div className="edit-overlay"><Edit size={16} /></div>}
+          {isDeleteMode && <div className="delete-overlay"><Trash2 size={16} /></div>}
+        </motion.div>
       </motion.div>
 
       <AnimatePresence>
-        {showChoices && !isEditMode && !isDeleteMode && (
-          <>
-            <motion.div
-              className="choice-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowChoices(false)}
-            />
-            <motion.div
-              className={`video-choice-popup ${popupPosition}`}
-              initial={{ opacity: 0, scale: 0.8, y: popupPosition === "below" ? -10 : 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: popupPosition === "below" ? -10 : 10 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            >
-              <div className="choice-header">
-                <span>{system.name}</span>
-                <button className="close-choice" onClick={() => setShowChoices(false)}>
-                  <X size={14} />
-                </button>
-              </div>
-              <div className="choice-options">
-                <motion.button
-                  className="choice-btn link-choice"
-                  onClick={() => handleChoiceClick("link")}
-                  whileHover={{ scale: 1.02, x: 5 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="choice-icon"><LinkIcon size={20} /></div>
-                  <div className="choice-info"><span className="choice-title">Truy cập ứng dụng</span></div>
-                  <span className="choice-badge">LINK</span>
-                </motion.button>
-                <motion.button
-                  className="choice-btn mp4-choice"
-                  onClick={() => handleChoiceClick("mp4")}
-                  whileHover={{ scale: 1.02, x: 5 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="choice-icon"><FileVideo size={20} /></div>
-                  <div className="choice-info"><span className="choice-title">Xem hướng dẫn</span></div>
-                  <span className="choice-badge mp4">VIDEO</span>
-                </motion.button>
-              </div>
-            </motion.div>
-          </>
+        {!isEditMode && !isDeleteMode && isActive && (
+          <motion.div
+            className="node-actions-direct"
+            initial={{ opacity: 0, y: -10, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.8 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            style={{
+              marginTop: 8 + 50 * (zoomLevel - 1),
+            }}
+          >
+            <div className="direct-action-icons">
+              <motion.button
+                className="direct-action-btn link-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleChoiceClick(e, "link");
+                }}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+                title="Truy cập ứng dụng"
+              >
+                <LinkIcon size={16} />
+              </motion.button>
+              <motion.button
+                className="direct-action-btn video-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleChoiceClick(e, "mp4");
+                }}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+                title="Xem hướng dẫn"
+              >
+                <FileVideo size={16} />
+              </motion.button>
+            </div>
+            <div className="zoom-slider-container">
+              <input
+                type="range"
+                min="0.5"
+                max={maxZoom}
+                step="0.1"
+                value={zoomLevel}
+                onChange={(e) => onZoom(parseFloat(e.target.value))}
+                onClick={(e) => e.stopPropagation()}
+                className="zoom-slider"
+                title={`Kích thước: ${Math.round(zoomLevel * 100)}%`}
+              />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
+
     </motion.div>
   );
 }
@@ -136,13 +149,25 @@ function Home() {
   const [showLogoMenu, setShowLogoMenu] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState(null);
   const [pendingAction, setPendingAction] = useState(null); // 'add', 'edit', 'delete'
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [activeNodeId, setActiveNodeId] = useState(null);
+
 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [editingSystem, setEditingSystem] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => { },
+  });
+
+  const [bgIndex, setBgIndex] = useState(1);
+  const totalBackgrounds = 7;
 
   const [formData, setFormData] = useState({
     id: "",
@@ -150,8 +175,16 @@ function Home() {
     appLink: "",
     youtubeLink: "",
     avatar: null,
-    avatarPreview: null
+    avatarPreview: null,
+    hasBorder: false
   });
+
+  const [envMode, setEnvMode] = useState('day'); // 'day', 'night'
+  const [weatherMode, setWeatherMode] = useState('sunny'); // 'sunny', 'rain'
+  const [nodeZooms, setNodeZooms] = useState(() => {
+    const saved = localStorage.getItem('hvs_node_zooms');
+    return saved ? JSON.parse(saved) : {};
+  }); // {nodeID: zoomLevel }
 
   const weather = useWeather();
   const navigate = useNavigate();
@@ -162,6 +195,20 @@ function Home() {
   }, []);
 
   useEffect(() => {
+    const syncEnvironment = () => {
+      const hour = new Date().getHours();
+      // Luôn tuân thủ khung giờ 6h sáng - 6h tối cho chế độ Ngày/Đêm
+      setEnvMode((hour >= 6 && hour < 18) ? 'day' : 'night');
+
+      if (weather) {
+        setWeatherMode(weather.code >= 51 ? 'rain' : 'sunny');
+      }
+    };
+
+    syncEnvironment();
+  }, [weather]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (logoRef.current && !logoRef.current.contains(event.target)) {
         setShowLogoMenu(false);
@@ -170,6 +217,21 @@ function Home() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const bgInterval = setInterval(() => {
+      setBgIndex(prev => (prev % totalBackgrounds) + 1);
+    }, 60000); // 30 seconds
+
+    return () => clearInterval(bgInterval);
+  }, []);
+
+  useEffect(() => {
+    // Preload next image to avoid flash during rotation
+    const nextIndex = (bgIndex % totalBackgrounds) + 1;
+    const img = new Image();
+    img.src = `/back${nextIndex}.png`;
+  }, [bgIndex]);
 
   const fetchSystems = async () => {
     const data = await api.getSystems();
@@ -198,7 +260,7 @@ function Home() {
       setShowPasswordModal(false);
       if (pendingAction === 'add') {
         setEditingSystem(null);
-        setFormData({ id: "", name: "", appLink: "", youtubeLink: "", avatar: null, avatarPreview: null });
+        setFormData({ id: "", name: "", appLink: "", youtubeLink: "", avatar: null, avatarPreview: null, hasBorder: false });
         setShowFormModal(true);
       } else if (pendingAction === 'edit') {
         setIsEditMode(true);
@@ -227,6 +289,14 @@ function Home() {
     data.append("name", formData.name);
     data.append("app_link", formData.appLink);
     data.append("youtube_link", formData.youtubeLink);
+    // Explicitly send "true"/"false" as string or use boolean
+    data.append("has_border", formData.hasBorder ? "true" : "false");
+
+    if (!formData.avatar && !editingSystem) {
+      setError("Vui lòng tải ảnh đại diện!");
+      return;
+    }
+
     if (formData.avatar) {
       data.append("avatar", formData.avatar);
     }
@@ -257,37 +327,67 @@ function Home() {
       appLink: system.appLink || "",
       youtubeLink: system.youtubeLink || "",
       avatar: null,
-      avatarPreview: system.avatarUrl ? api.getStaticUrl(system.avatarUrl) : null
+      avatarPreview: system.avatarUrl ? api.getStaticUrl(system.avatarUrl) : null,
+      hasBorder: system.hasBorder || false
     });
     setShowFormModal(true);
     setIsEditMode(false);
   };
 
-  const handleDeleteNode = async (system) => {
-    if (window.confirm(`Bạn có chắc muốn xóa node "${system.name}"?`)) {
-      const result = await api.deleteSystem(system.id);
-      if (result) {
-        await fetchSystems();
+  const handleDeleteNode = (system) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Xác nhận xóa",
+      message: `Bạn có chắc muốn xóa node "${system.name}"? Sau khi xóa, dữ liệu sẽ không thể khôi phục.`,
+      onConfirm: async () => {
+        const result = await api.deleteSystem(system.id);
+        if (result) {
+          await fetchSystems();
+        }
+        setIsDeleteMode(false);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
-      setIsDeleteMode(false);
+    });
+  };
+
+
+  const handleDragEnd = async (e, info, system) => {
+    const newX = (system.position?.x || 0) + info.offset.x;
+    const newY = (system.position?.y || 0) + info.offset.y;
+
+    const result = await api.updateSystemPosition(system.id, {
+      x: newX,
+      y: newY
+    });
+
+    if (result) {
+      fetchSystems();
     }
   };
 
-  const handleDragEnd = async (id, event, info) => {
-    const system = systems.find(s => s.id === id);
-    if (system) {
-      // info.offset is total distance from start of drag
-      const newPos = {
-        x: (system.position?.x || 0) + info.offset.x,
-        y: (system.position?.y || 0) + info.offset.y
-      };
-
-      // Optimistic update
-      setSystems(prev => prev.map(s => s.id === id ? { ...s, position: newPos } : s));
-
-      await api.updateSystemPosition(id, newPos);
-    }
+  const handleNodeZoom = (id, level) => {
+    setNodeZooms(prev => {
+      const next = { ...prev, [id]: level };
+      localStorage.setItem('hvs_node_zooms', JSON.stringify(next));
+      return next;
+    });
   };
+
+  const getEmbedUrl = (url) => {
+    if (!url) return "";
+    let videoId = "";
+    if (url.includes("youtube.com/watch?v=")) {
+      videoId = url.split("v=")[1].split("&")[0];
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1].split("?")[0];
+    } else if (url.includes("youtube.com/embed/")) {
+      const parts = url.split("/");
+      const idWithParams = parts[parts.length - 1];
+      videoId = idWithParams.split("?")[0];
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}` : url;
+  };
+
 
   if (loading) {
     return (
@@ -312,9 +412,50 @@ function Home() {
     !["hvs-gate", "hvs-kios-lite", "hvs-food", "hvs-kios", "hvs-umea"].includes(s.id)
   );
 
+  const applePositions = [
+    { top: "15%", left: "45%", size: 40, delay: 0 },
+    { top: "20%", left: "55%", size: 35, delay: 0.5 },
+    { top: "32%", left: "42%", size: 38, delay: 1.2 },
+    { top: "38%", left: "58%", size: 42, delay: 0.8 },
+    { top: "25%", left: "48%", size: 30, delay: 0.3 },
+    { top: "42%", left: "52%", size: 38, delay: 1.5 },
+  ];
+
   return (
-    <div className="home-container">
-      <div className="forest-bg"></div>
+    <div className={`home-container env-${envMode} env-${weatherMode}`} onClick={() => setActiveNodeId(null)}>
+      <AnimatePresence mode="popLayout">
+        <motion.div
+          key={bgIndex}
+          className="forest-bg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 2 }}
+          style={{ backgroundImage: `url('/back${bgIndex}.png')` }}
+        />
+      </AnimatePresence>
+
+      <WeatherEffects weatherMode={weatherMode} />
+
+      {/* Decorative apples in the canopy */}
+      <div className="tree-decoration-layer">
+        {applePositions.map((pos, index) => (
+          <motion.div
+            key={`apple-${index}`}
+            className="decorative-apple"
+            style={{
+              top: pos.top,
+              left: pos.left,
+              position: 'absolute'
+            }}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1 + (index * 0.1) }}
+          >
+            <Apple size={pos.size} fill="currentColor" strokeWidth={1} />
+          </motion.div>
+        ))}
+      </div>
 
       <motion.header className="header" initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
         <div className="header-brand" onClick={handleLogoClick} style={{ cursor: 'pointer' }} ref={logoRef}>
@@ -342,8 +483,7 @@ function Home() {
             </AnimatePresence>
           </div>
           <div className="brand-text">
-            <h1>HVS</h1>
-            <span>Hương Việt Sinh</span>
+
           </div>
         </div>
         <WeatherWidget weather={weather} />
@@ -357,95 +497,81 @@ function Home() {
       )}
 
       <main className="tree-main">
-        <div className="tree-container">
+        <div className="tree-container" layout="true" layoutdependency={systems}>
           <div className="cards-layer">
+
             <div className="branch-row">
               {gate && (
                 <motion.div
-                  className="branch-node left"
+                  className={`branch-node left`}
                   layout
-                  drag={!isEditMode && !isDeleteMode}
+                  drag={isEditMode}
+                  dragListener={isEditMode}
                   dragMomentum={false}
-                  dragElastic={0.05}
-                  dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-                  whileDrag={{ scale: 1.02, zIndex: 100 }}
-                  initial={false}
+                  onDragEnd={(e, info) => handleDragEnd(e, info, gate)}
+                  initial={{ x: gate.position?.x || 0, y: gate.position?.y || 0 }}
                   animate={{ x: gate.position?.x || 0, y: gate.position?.y || 0 }}
-                  onDragEnd={(e, info) => handleDragEnd(gate.id, e, info)}
+
                 >
                   <TreeNode
                     system={gate}
                     config={systemConfig["hvs-gate"]}
-                    popupPosition="below"
                     isEditMode={isEditMode}
                     isDeleteMode={isDeleteMode}
                     onEdit={handleEditNode}
                     onDelete={handleDeleteNode}
+                    isActive={activeNodeId === gate.id}
+                    onToggle={(id) => setActiveNodeId(activeNodeId === id ? null : id)}
+                    onWatchVideo={(url) => setSelectedVideoUrl(url)}
+                    zoomLevel={nodeZooms[gate.id] || 1.0}
+                    onZoom={(level) => handleNodeZoom(gate.id, level)}
                   />
+
                 </motion.div>
               )}
 
               {kiosLite && (
                 <motion.div
-                  className="branch-node right"
-                  drag={!isEditMode && !isDeleteMode}
-                  dragMomentum={true}
-                  dragElastic={0}
-                  dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-                  whileDrag={{ scale: 1.02, zIndex: 100 }}
-                  initial={false}
+                  className={`branch-node right`}
+                  layout
+                  drag={isEditMode}
+                  dragListener={isEditMode}
+                  dragMomentum={false}
+                  onDragEnd={(e, info) => handleDragEnd(e, info, kiosLite)}
+                  initial={{ x: kiosLite.position?.x || 0, y: kiosLite.position?.y || 0 }}
                   animate={{ x: kiosLite.position?.x || 0, y: kiosLite.position?.y || 0 }}
-                  onDragEnd={(e, info) => handleDragEnd(kiosLite.id, e, info)}
+
                 >
                   <TreeNode
                     system={kiosLite}
                     config={systemConfig["hvs-kios-lite"]}
-                    popupPosition="below"
                     isEditMode={isEditMode}
                     isDeleteMode={isDeleteMode}
                     onEdit={handleEditNode}
                     onDelete={handleDeleteNode}
+                    isActive={activeNodeId === kiosLite.id}
+                    onToggle={(id) => setActiveNodeId(activeNodeId === id ? null : id)}
+                    onWatchVideo={(url) => setSelectedVideoUrl(url)}
+                    zoomLevel={nodeZooms[kiosLite.id] || 1.0}
+                    onZoom={(level) => handleNodeZoom(kiosLite.id, level)}
                   />
+
                 </motion.div>
               )}
             </div>
 
             <div className="trunk-column">
-              {food && (
-                <motion.div
-                  className="branch-node left"
-                  drag={!isEditMode && !isDeleteMode}
-                  dragMomentum={true}
-                  dragElastic={0}
-                  dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-                  whileDrag={{ scale: 1.05, zIndex: 1100 }}
-                  initial={false}
-                  animate={{ x: food.position?.x || 0, y: food.position?.y || 0 }}
-                  onDragEnd={(e, info) => handleDragEnd(food.id, e, info)}
-                >
-                  <TreeNode
-                    system={food}
-                    config={systemConfig["hvs-food"]}
-                    isEditMode={isEditMode}
-                    isDeleteMode={isDeleteMode}
-                    onEdit={handleEditNode}
-                    onDelete={handleDeleteNode}
-                  />
-                </motion.div>
-              )}
-
               {kios && (
                 <motion.div
-                  className="trunk-node"
+                  className={`trunk-node`}
                   layout
-                  drag={!isEditMode && !isDeleteMode}
+                  drag={isEditMode}
+                  dragListener={isEditMode}
                   dragMomentum={false}
-                  dragElastic={0.05}
-                  dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-                  whileDrag={{ scale: 1.02, zIndex: 100 }}
-                  initial={false}
+                  onDragEnd={(e, info) => handleDragEnd(e, info, kios)}
+                  initial={{ x: kios.position?.x || 0, y: kios.position?.y || 0 }}
                   animate={{ x: kios.position?.x || 0, y: kios.position?.y || 0 }}
-                  onDragEnd={(e, info) => handleDragEnd(kios.id, e, info)}
+
                 >
                   <TreeNode
                     system={kios}
@@ -454,22 +580,58 @@ function Home() {
                     isDeleteMode={isDeleteMode}
                     onEdit={handleEditNode}
                     onDelete={handleDeleteNode}
+                    isActive={activeNodeId === kios.id}
+                    onToggle={(id) => setActiveNodeId(activeNodeId === id ? null : id)}
+                    onWatchVideo={(url) => setSelectedVideoUrl(url)}
+                    zoomLevel={nodeZooms[kios.id] || 1.0}
+                    onZoom={(level) => handleNodeZoom(kios.id, level)}
+                    maxZoom={1.4}
                   />
+
+                </motion.div>
+              )}
+
+              {food && (
+                <motion.div
+                  className={`trunk-node`}
+                  layout
+                  drag={isEditMode}
+                  dragListener={isEditMode}
+                  dragMomentum={false}
+                  onDragEnd={(e, info) => handleDragEnd(e, info, food)}
+                  initial={{ x: food.position?.x || 0, y: food.position?.y || 0 }}
+                  animate={{ x: food.position?.x || 0, y: food.position?.y || 0 }}
+
+                >
+                  <TreeNode
+                    system={food}
+                    config={systemConfig["hvs-food"]}
+                    isEditMode={isEditMode}
+                    isDeleteMode={isDeleteMode}
+                    onEdit={handleEditNode}
+                    onDelete={handleDeleteNode}
+                    isActive={activeNodeId === food.id}
+                    onToggle={(id) => setActiveNodeId(activeNodeId === id ? null : id)}
+                    onWatchVideo={(url) => setSelectedVideoUrl(url)}
+                    zoomLevel={nodeZooms[food.id] || 1.0}
+                    onZoom={(level) => handleNodeZoom(food.id, level)}
+                    maxZoom={1.4}
+                  />
+
                 </motion.div>
               )}
 
               {umea && (
                 <motion.div
-                  className="trunk-node root-node"
+                  className={`trunk-node root-node`}
                   layout
-                  drag={!isEditMode && !isDeleteMode}
+                  drag={isEditMode}
+                  dragListener={isEditMode}
                   dragMomentum={false}
-                  dragElastic={0.05}
-                  dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-                  whileDrag={{ scale: 1.02, zIndex: 100 }}
-                  initial={false}
+                  onDragEnd={(e, info) => handleDragEnd(e, info, umea)}
+                  initial={{ x: umea.position?.x || 0, y: umea.position?.y || 0 }}
                   animate={{ x: umea.position?.x || 0, y: umea.position?.y || 0 }}
-                  onDragEnd={(e, info) => handleDragEnd(umea.id, e, info)}
+
                 >
                   <TreeNode
                     system={umea}
@@ -478,7 +640,14 @@ function Home() {
                     isDeleteMode={isDeleteMode}
                     onEdit={handleEditNode}
                     onDelete={handleDeleteNode}
+                    isActive={activeNodeId === umea.id}
+                    onToggle={(id) => setActiveNodeId(activeNodeId === id ? null : id)}
+                    onWatchVideo={(url) => setSelectedVideoUrl(url)}
+                    zoomLevel={nodeZooms[umea.id] || 1.0}
+                    onZoom={(level) => handleNodeZoom(umea.id, level)}
+                    maxZoom={1.4}
                   />
+
                 </motion.div>
               )}
             </div>
@@ -486,16 +655,16 @@ function Home() {
             {dynamicNodes.map(node => (
               <motion.div
                 key={node.id}
-                className="dynamic-node"
-                drag={!isEditMode && !isDeleteMode}
-                dragMomentum={true}
-                dragElastic={0}
-                dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-                whileDrag={{ scale: 1.02, zIndex: 100 }}
-                initial={false}
+                className={`dynamic-node ${node.hasBorder ? 'trunk-node' : ''}`}
+                layout
+                drag={isEditMode}
+                dragListener={isEditMode}
+                dragMomentum={false}
+                onDragEnd={(e, info) => handleDragEnd(e, info, node)}
+                initial={{ x: node.position?.x || 0, y: node.position?.y || 0 }}
                 animate={{ x: node.position?.x || 0, y: node.position?.y || 0 }}
-                onDragEnd={(e, info) => handleDragEnd(node.id, e, info)}
                 style={{ position: 'absolute' }}
+
               >
                 <TreeNode
                   system={node}
@@ -504,7 +673,13 @@ function Home() {
                   isDeleteMode={isDeleteMode}
                   onEdit={handleEditNode}
                   onDelete={handleDeleteNode}
+                  isActive={activeNodeId === node.id}
+                  onToggle={(id) => setActiveNodeId(activeNodeId === id ? null : id)}
+                  onWatchVideo={(url) => setSelectedVideoUrl(url)}
+                  zoomLevel={nodeZooms[node.id] || 1.0}
+                  onZoom={(level) => handleNodeZoom(node.id, level)}
                 />
+
               </motion.div>
             ))}
           </div>
@@ -546,38 +721,54 @@ function Home() {
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="form-grid">
-                  <div className="avatar-upload-section">
-                    <label className="avatar-dropzone">
-                      {formData.avatarPreview ? (
-                        <img src={formData.avatarPreview} alt="Preview" className="avatar-preview-img" />
-                      ) : (
-                        <div className="upload-placeholder">
-                          <Upload size={32} />
-                          <span>Tải ảnh đại diện</span>
-                        </div>
-                      )}
-                      <input type="file" onChange={handleFileChange} accept="image/*" hidden />
-                    </label>
+                  <div className="avatar-upload-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+                    <div className={`preview-wrapper ${formData.hasBorder ? 'trunk-node' : ''}`} style={{ padding: '5px' }}>
+                      <label className="avatar-dropzone node-card" style={{ width: '100px', height: '100px', margin: '0' }}>
+                        {formData.avatarPreview ? (
+                          <img src={formData.avatarPreview} alt="Preview" className="avatar-preview-img" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ) : (
+                          <div className="upload-placeholder">
+                            <Upload size={32} />
+                            <span>Ảnh</span>
+                          </div>
+                        )}
+                        <input type="file" onChange={handleFileChange} accept="image/*" hidden />
+                      </label>
+                    </div>
+                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>Xem trước Node</span>
                   </div>
 
                   <div className="form-fields">
                     {!editingSystem && (
                       <div className="input-field">
-                        <label>Mã Node (ID)</label>
+                        <label>Mã Node (ID) <span style={{ color: '#f87171' }}>*</span></label>
                         <input type="text" placeholder="vd: hvs-new" value={formData.id} onChange={(e) => setFormData({ ...formData, id: e.target.value })} required />
                       </div>
                     )}
                     <div className="input-field">
-                      <label>Tên hiển thị</label>
+                      <label>Tên hiển thị <span style={{ color: '#f87171' }}>*</span></label>
                       <input type="text" placeholder="Tên hệ thống" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                     </div>
                     <div className="input-field">
-                      <label>Link ứng dụng</label>
-                      <input type="url" placeholder="https://..." value={formData.appLink} onChange={(e) => setFormData({ ...formData, appLink: e.target.value })} />
+                      <label>Link ứng dụng <span style={{ color: '#f87171' }}>*</span></label>
+                      <input type="url" placeholder="https://..." value={formData.appLink} onChange={(e) => setFormData({ ...formData, appLink: e.target.value })} required />
                     </div>
                     <div className="input-field">
-                      <label>Link YouTube hướng dẫn</label>
-                      <input type="url" placeholder="https://youtube.com/..." value={formData.youtubeLink} onChange={(e) => setFormData({ ...formData, youtubeLink: e.target.value })} />
+                      <label>Link YouTube hướng dẫn <span style={{ color: '#f87171' }}>*</span></label>
+                      <input type="url" placeholder="https://youtube.com/..." value={formData.youtubeLink} onChange={(e) => setFormData({ ...formData, youtubeLink: e.target.value })} required />
+                    </div>
+
+                    <div className="form-group border-toggle-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '15px', background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px' }}>
+                      <input
+                        type="checkbox"
+                        id="hasBorderToggle"
+                        checked={formData.hasBorder}
+                        onChange={(e) => setFormData({ ...formData, hasBorder: e.target.checked })}
+                        style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="hasBorderToggle" style={{ color: '#fff', fontSize: '15px', cursor: 'pointer', userSelect: 'none', fontWeight: '500' }}>
+                        Sử dụng khung viền
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -587,6 +778,41 @@ function Home() {
           </div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedVideoUrl && (
+          <div className="video-modal-overlay" onClick={() => setSelectedVideoUrl(null)}>
+            <motion.div
+              className="video-modal-content"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="video-modal-close" onClick={() => setSelectedVideoUrl(null)}>
+                <X size={24} />
+              </button>
+              <div className="video-iframe-container">
+                <iframe
+                  src={getEmbedUrl(selectedVideoUrl)}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }
