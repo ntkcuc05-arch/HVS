@@ -1,119 +1,115 @@
-# User-Help Portal
+# User-Help Portal (HSV Help Portal)
 
-Portal hướng dẫn sử dụng các hệ thống HVS với giao diện cây hệ sinh thái.
+Portal hướng dẫn sử dụng các hệ thống HVS với giao diện cây hệ sinh thái sinh động, trực quan.
 
-## 🚀 Chạy dự án chỉ với 1 lệnh (Docker Compose)
+## 🚀 Công nghệ sử dụng
 
-Sau khi clone về, bạn chỉ cần chạy lệnh sau trong thư mục gốc dự án:
+### Frontend
+- **React 18** + **Vite**: Khởi tạo và build nhanh chóng.
+- **Framer Motion**: Thư viện hiệu ứng chuyển dộng cho cây và các icon táo.
+- **Lucide React**: Thư viện icon hiện đại.
+- **Vanilla CSS**: Giao diện tùy chỉnh chi tiết, hiệu ứng kính (glassmorphism).
+
+### Backend
+- **FastAPI**: RESTful API tốc độ cao.
+- **SQLite**: Cơ sở dữ liệu nhẹ để lưu trữ thông tin hệ thống và vị trí các node.
+- **Uvicorn**: ASGI server để chạy ứng dụng Python.
+
+---
+
+## 🛠️ Hướng dẫn cài đặt
+
+### 1. Chạy với Docker (Khuyên dùng)
+Bạn chỉ cần Docker và Docker Compose đã được cài đặt.
 
 ```bash
 docker-compose up --build
 ```
+- **FE**: [http://localhost:5173](http://localhost:5173)
+- **BE**: [http://localhost:8000](http://localhost:8000)
 
-Sau khi build xong:
+### 2. Chạy Local (Manual)
 
-- Truy cập FE: http://localhost:5173
-- Truy cập BE: http://localhost:8000
-
-> **Lưu ý:**
->
-> - Cần cài sẵn Docker & Docker Compose.
-> - Không cần cài Python, Node.js, không cần setup gì thêm.
-> - Mọi thứ sẽ tự động build và chạy.
-
-## 🖥️ Cách chạy Local
-
-### Backend
-
+#### Backend
 ```bash
-cd Source/BE
+cd Source/Backend
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# Windows:
+.\venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
 pip install -r requirements.txt
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Frontend
-
+#### Frontend
 ```bash
 cd Source/FE
 npm install
 npm run dev
 ```
 
+---
+
 ## 📁 Cấu trúc thư mục
 
-```
-User-Help/
-├── docker/
-│   ├── Dockerfile.be
-│   └── Dockerfile.fe
+```text
+HSV/
 ├── Source/
-│   ├── BE/
-│   │   ├── main.py
-│   │   ├── requirements.txt
-│   │   ├── data/
-│   │   │   └── systems.json
-│   │   └── static/
-│   │       ├── videos/
-│   │       ├── docs/
-│   │       └── logo/
-│   └── FE/
+│   ├── Backend/            # FastAPI source code
+│   │   ├── main.py         # Entry point (API endpoints)
+│   │   ├── database.py     # SQLite connection & Models
+│   │   ├── data/           # systems.db & systems.json backup
+│   │   └── static/         # Chứa videos, docs và logo
+│   └── FE/                 # React source code
 │       ├── src/
-│       ├── package.json
-│       └── vite.config.js
+│       │   ├── pages/      # Home.jsx (Giao diện cây hệ sinh thái)
+│       │   ├── components/ # Các UI components dùng chung
+│       │   └── constants/  # Cấu hình hệ thống mặc định
+├── docker/                 # Cấu hình Dockerfile
 ├── docker-compose.yml
 └── README.md
 ```
 
-## ➕ Cách thêm hệ thống mới
+---
 
-1. Mở file `Source/BE/data/systems.json`
-2. Thêm object mới vào mảng `systems`:
+## 🌟 Tính năng nổi bật
 
-```json
-{
-  "id": "new-system",
-  "name": "Tên hệ thống",
-  "group": "fruit|branch|root",
-  "appLink": "https://link-ung-dung.com",
-  "videoFile": "new-system.mp4",
-  "docFile": null,
-  "segments": [
-    {
-      "title": "Giới thiệu",
-      "start": 0,
-      "end": 30,
-      "summary": "Mô tả đoạn video"
-    }
-  ]
-}
-```
+- **Giao diện Cây Hệ Sinh Thái**: Các hệ thống được biểu diễn dưới dạng quả táo, nhánh cây và rễ cây.
+- **Movable Nodes**: Ở chế độ chỉnh sửa, người dùng có thể kéo thả các node táo để thay đổi vị trí. Vị trí sẽ tự động được lưu vào database.
+- **Chế độ Chỉnh sửa (Edit Mode)**: Nhấn nút "+" (yêu cầu mật khẩu) để thêm hệ thống mới hoặc di chuyển các hệ thống hiện có.
+- **Xem Video/Tài liệu**: Tích hợp trình xem video pop-up ngay trên trang và link trực tiếp đến tài liệu hướng dẫn.
 
-## 🎬 Cách thêm video/doc thật
+---
 
-### Video
+## 🔧 Quản lý dữ liệu
 
-1. Copy file `.mp4` vào thư mục `Source/BE/static/videos/`
-2. Cập nhật `videoFile` trong `systems.json` với tên file
+### Cách thêm hệ thống mới
+1. Bật **Edit Mode** (Nút "+" ở góc phải).
+2. Nhập thông tin: Tên, Link ứng dụng, Tên file Video/Doc.
+3. Node mới sẽ xuất hiện trên cây.
 
-### Tài liệu (PDF/DOCX)
+### Quản lý file tĩnh
+- **Video**: Copy vào `Source/Backend/static/videos/`
+- **Tài liệu**: Copy vào `Source/Backend/static/docs/`
+- **Logo**: Copy vào `Source/Backend/static/logo/`
 
-1. Copy file vào thư mục `Source/BE/static/docs/`
-2. Cập nhật `docFile` trong `systems.json` với tên file
+---
 
-## 🎯 Các hệ thống
+## 🎯 Danh sách hệ thống hiện tại
 
-| ID            | Tên           | Nhóm      | Có tài liệu |
-| ------------- | ------------- | --------- | ----------- |
-| hvs-gate      | HVS-GATE      | Quả       | Không       |
-| hvs-kios-lite | HVS-KIOS LITE | Quả       | Không       |
-| hvs-food      | HVS-FOOD      | Nhánh cây | Không       |
-| hvs-kios      | HVS-KIOS      | Nhánh cây | Không       |
-| hvs-umea      | HVS-UMEA      | Rễ cây    | Có          |
+| ID | Tên Hệ Thống | Phân Nhóm |
+| :--- | :--- | :--- |
+| hvs-gate | HVS-GATE | Quả (Fruit) |
+| hvs-kios-lite | HVS-KIOS LITE | Quả (Fruit) |
+| hvs-food | HVS-FOOD | Nhánh (Branch) |
+| hvs-kios | HVS-KIOS | Nhánh (Branch) |
+| hvs-umea | HVS-UMEA | Rễ (Root) |
 
-## 📝 Ghi chú
+---
 
-- Video placeholder được tạo sẵn. Thay bằng file mp4 thật khi có.
-- Nếu file video/doc không tồn tại, UI sẽ hiển thị thông báo nhẹ, không crash.
-- Không cần đăng nhập/xác thực.
+## 📝 Ghi chú phát triển
+- Ứng dụng hỗ trợ drag & drop bền vững (Persistence) nhờ backend SQLite.
+- Giao diện được thiết kế theo phong cách hiện đại với hiệu ứng Glassmorphism.
+- Liên kết YouTube trong popup sẽ tự động mở trong modal tập trung.
