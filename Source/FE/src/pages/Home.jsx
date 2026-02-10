@@ -414,11 +414,14 @@ function Home() {
 
   const applePositions = [
     { top: "15%", left: "45%", size: 40, delay: 0 },
-    { top: "20%", left: "55%", size: 35, delay: 0.5 },
+    { top: "20%", left: "65%", size: 35, delay: 0.5 },
     { top: "32%", left: "42%", size: 38, delay: 1.2 },
     { top: "38%", left: "58%", size: 42, delay: 0.8 },
     { top: "25%", left: "48%", size: 30, delay: 0.3 },
-    { top: "42%", left: "52%", size: 38, delay: 1.5 },
+    { top: "32%", left: "52%", size: 38, delay: 1.5 },
+    { top: "22%", left: "32%", size: 38, delay: 1.5 },
+    { top: "32%", left: "32%", size: 38, delay: 1.5 },
+
   ];
 
   return (
